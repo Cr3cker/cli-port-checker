@@ -8,6 +8,8 @@ from rich.progress import track
 from typing import Optional
 
 
+app = typer.Typer()
+
 banner = pyfiglet.figlet_format("Port Scanner")
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -32,12 +34,17 @@ def specified_port(hostname, port):
         sys.exit()
 
 
-def main(hostname: str, port: Optional[int] = 0):
+def print_banner(banner, hostname):
     print(banner)
     print("-" * 50)
     print("Scanning Target: " + hostname)
     print("Scanning started at: " + str(datetime.now().strftime("%H:%M:%S, %d/%m/%Y")))
     print("-" * 50)
+
+
+@app.command()
+def scan_ports(hostname: str, port: Optional[int] = 0):
+    print_banner(banner, hostname)
     if port != 0:
         for _ in track(range(100), description="Processing..."):
             time.sleep(0.01)
@@ -52,5 +59,20 @@ def main(hostname: str, port: Optional[int] = 0):
         print("Processed 65535 ports in total")
 
 
+@app.command()
+def ping(hostname: str):
+    print_banner(banner, hostname)
+    try:
+        print(f"Pinging {hostname}")
+        for _ in track(range(100), description="Processing..."):
+            time.sleep(0.01)
+        host = socket.gethostbyname(hostname)
+        print(f"Host {hostname} is up")
+    except socket.gaierror:
+        print("Host is down")
+
+    
 if __name__ == "__main__":
-    typer.run(main)
+    app()
+    
+    
